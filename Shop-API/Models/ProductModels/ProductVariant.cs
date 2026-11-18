@@ -10,6 +10,8 @@
 
         public string SKU { get; set; } = string.Empty;
 
+        public string? Description { get; set; }
+
         public decimal Price { get; set; }
 
         public int StockQuantity { get; set; }
@@ -19,7 +21,7 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
-        public ICollection<ProductVariantAttributeValue> AttributeValues { get; set; } = new List<ProductVariantAttributeValue>();
+        public ICollection<VariantAttribute> AttributeValues { get; set; } = new List<VariantAttribute>();
 
         public ICollection<ProductVariantImage> Images { get; set; } = new List<ProductVariantImage>();
     }
