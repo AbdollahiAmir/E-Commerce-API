@@ -48,6 +48,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
                 .HasForeignKey(i => i.ProductVariantId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(i => i.RowVersion)
+                .IsRowVersion();
         }
     }
 }

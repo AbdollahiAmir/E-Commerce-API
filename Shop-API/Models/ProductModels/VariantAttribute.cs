@@ -11,5 +11,7 @@
         public string Value { get; set; } = null!;
 
         public string? ColorCode { get; set; }
+
+        public byte[] RowVersion { get; set; } = null!;
     }
 }

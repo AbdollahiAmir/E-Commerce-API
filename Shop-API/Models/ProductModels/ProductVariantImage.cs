@@ -16,5 +16,7 @@
         public bool IsMain { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public byte[] RowVersion { get; set; } = null!;
     }
 }

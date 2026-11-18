@@ -14,6 +14,8 @@
 
         public DateTime? UpdatedAt { get; set; }
 
+        public byte[] RowVersion { get; set; } = null!;
+
         public ICollection<VariantAttribute> VariantAttributes { get; set; } = new HashSet<VariantAttribute>();
     }
 }

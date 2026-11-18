@@ -22,6 +22,8 @@
 
         public DateTime? UpdatedAt { get; set; }
 
+        public byte[] RowVersion { get; set; } = null!;
+
         public ICollection<VariantAttribute> AttributeValues { get; set; } = new List<VariantAttribute>();
 
         public ICollection<ProductVariantImage> Images { get; set; } = new List<ProductVariantImage>();

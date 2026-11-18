@@ -29,6 +29,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.HasIndex(a => a.Code)
                 .IsUnique();
+
+            builder.Property(a => a.RowVersion)
+                .IsRowVersion();
         }
     }
 }

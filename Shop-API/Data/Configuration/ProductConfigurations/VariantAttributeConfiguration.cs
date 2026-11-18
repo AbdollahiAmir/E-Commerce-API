@@ -32,6 +32,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
                 .WithMany(a => a.VariantAttributes)
                 .HasForeignKey(va => va.ProductAttributeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(va => va.RowVersion)
+                .IsRowVersion();
         }
     }
 }

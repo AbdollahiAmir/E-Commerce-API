@@ -59,6 +59,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
                         join.HasKey("ProductId", "CategoryId");
                     });
+
+            builder.Property(c => c.RowVersion)
+                .IsRowVersion();
         }
     }
 }

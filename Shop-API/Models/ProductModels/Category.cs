@@ -22,6 +22,8 @@
 
         public DateTime? UpdatedAt { get; set; }
 
+        public byte[] RowVersion { get; set; } = null!;
+
         public ICollection<Product> Products { get; set; } = new HashSet<Product>();
     }
 }

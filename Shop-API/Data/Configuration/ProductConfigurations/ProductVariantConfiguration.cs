@@ -45,6 +45,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.HasIndex(v => v.SKU)
                 .IsUnique();
+
+            builder.Property(v => v.RowVersion)
+                .IsRowVersion();
         }
     }
 }
