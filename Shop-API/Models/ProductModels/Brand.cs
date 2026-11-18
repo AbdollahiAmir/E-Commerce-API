@@ -1,4 +1,5 @@
-﻿using Shop_API.Models.MediaModels;
+﻿
+using Shop_API.Models.MediaModels;
 
 namespace Shop_API.Models.ProductModels
 {

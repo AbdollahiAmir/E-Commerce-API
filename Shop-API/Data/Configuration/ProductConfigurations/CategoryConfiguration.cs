@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Shop_API.Models.ProductModels;
 
@@ -36,12 +37,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             builder.HasIndex(c => c.Slug)
                 .IsUnique();
 
-            builder.HasIndex(c => c.ImageMediaId)
-                .IsUnique();
-
             builder.HasOne(c => c.ImageMedia)
-                .WithOne(m => m.CategoryImage)
-                .HasForeignKey<Category>(c => c.ImageMediaId)
+                .WithMany(m => m.CategoryImages)
+                .HasForeignKey(c => c.ImageMediaId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 

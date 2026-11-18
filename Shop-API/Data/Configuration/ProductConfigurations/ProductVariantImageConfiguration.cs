@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Shop_API.Models.ProductModels;
 
@@ -42,9 +43,6 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
                 .IsUnique()
                 .HasFilter("[IsMain] = 1");
 
-            builder.HasIndex(i => i.MediaId)
-                .IsUnique();
-
             builder.HasOne(i => i.ProductVariant)
                 .WithMany(v => v.Images)
                 .HasForeignKey(i => i.ProductVariantId)
@@ -52,8 +50,8 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(i => i.Media)
-                .WithOne(m => m.ProductVariantImage)
-                .HasForeignKey<ProductVariantImage>(i => i.MediaId)
+                .WithMany(m => m.ProductVariantImages)
+                .HasForeignKey(i => i.MediaId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 

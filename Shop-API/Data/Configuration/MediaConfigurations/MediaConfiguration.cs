@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Shop_API.Models.MediaModels;
 
-namespace Shop_API.Data.Configuration.ProductConfigurations
+namespace Shop_API.Data.Configuration.MediaConfigurations
 {
     public class MediaConfiguration : IEntityTypeConfiguration<Media>
     {

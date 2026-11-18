@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Shop_API.Models.ProductModels;
 
@@ -33,13 +34,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             builder.HasIndex(b => b.Slug)
                 .IsUnique();
 
-            builder.HasIndex(b => b.LogoMediaId)
-                .IsUnique()
-                .HasFilter("[LogoMediaId] IS NOT NULL");
-
             builder.HasOne(b => b.LogoMedia)
-                .WithOne(m => m.BrandLogo)
-                .HasForeignKey<Brand>(b => b.LogoMediaId)
+                .WithMany(m => m.BrandLogos)
+                .HasForeignKey(b => b.LogoMediaId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(b => b.RowVersion)

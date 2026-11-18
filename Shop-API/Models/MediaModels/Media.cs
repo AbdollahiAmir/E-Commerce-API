@@ -1,4 +1,5 @@
-﻿using Shop_API.Models.ProductModels;
+﻿
+using Shop_API.Models.ProductModels;
 
 namespace Shop_API.Models.MediaModels
 {
@@ -22,10 +23,10 @@ namespace Shop_API.Models.MediaModels
 
         public byte[] RowVersion { get; set; } = null!;
 
-        public Brand? BrandLogo { get; set; }
+        public ICollection<Brand> BrandLogos { get; set; } = new List<Brand>();
 
-        public Category? CategoryImage { get; set; }
+        public ICollection<Category> CategoryImages { get; set; } = new List<Category>();
 
-        public ProductVariantImage? ProductVariantImage { get; set; }
+        public ICollection<ProductVariantImage> ProductVariantImages { get; set; } = new List<ProductVariantImage>();
     }
 }
