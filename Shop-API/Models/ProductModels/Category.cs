@@ -1,4 +1,6 @@
-﻿namespace Shop_API.Models.ProductModels
+﻿using Shop_API.Models.MediaModels;
+
+namespace Shop_API.Models.ProductModels
 {
     public class Category
     {
@@ -9,6 +11,10 @@
         public string Slug { get; set; } = string.Empty;
 
         public string? Description { get; set; }
+
+        public Guid ImageMediaId { get; set; }
+
+        public Media ImageMedia { get; set; } = null!;
 
         public int? ParentCategoryId { get; set; }
 

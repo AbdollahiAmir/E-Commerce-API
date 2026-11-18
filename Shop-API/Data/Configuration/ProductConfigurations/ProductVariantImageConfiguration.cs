@@ -17,9 +17,8 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.HasKey(i => i.Id);
 
-            builder.Property(i => i.ImageUrl)
-                .IsRequired()
-                .HasMaxLength(1000);
+            builder.Property(i => i.MediaId)
+                .IsRequired();
 
             builder.Property(i => i.AltText)
                 .HasMaxLength(250);
@@ -43,11 +42,20 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
                 .IsUnique()
                 .HasFilter("[IsMain] = 1");
 
+            builder.HasIndex(i => i.MediaId)
+                .IsUnique();
+
             builder.HasOne(i => i.ProductVariant)
                 .WithMany(v => v.Images)
                 .HasForeignKey(i => i.ProductVariantId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(i => i.Media)
+                .WithOne(m => m.ProductVariantImage)
+                .HasForeignKey<ProductVariantImage>(i => i.MediaId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(i => i.RowVersion)
                 .IsRowVersion();

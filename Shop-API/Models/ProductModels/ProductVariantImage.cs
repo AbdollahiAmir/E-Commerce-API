@@ -1,13 +1,18 @@
-﻿namespace Shop_API.Models.ProductModels
+﻿using Shop_API.Models.MediaModels;
+
+namespace Shop_API.Models.ProductModels
 {
     public class ProductVariantImage
     {
         public int Id { get; set; }
 
         public int ProductVariantId { get; set; }
+
         public ProductVariant ProductVariant { get; set; } = null!;
 
-        public string ImageUrl { get; set; } = null!;
+        public Guid MediaId { get; set; }
+
+        public Media Media { get; set; } = null!;
 
         public string? AltText { get; set; }
 

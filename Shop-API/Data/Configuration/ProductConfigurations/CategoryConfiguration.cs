@@ -23,6 +23,9 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             builder.Property(c => c.Description)
                 .HasMaxLength(1000);
 
+            builder.Property(c => c.ImageMediaId)
+                .IsRequired();
+
             builder.Property(c => c.IsActive)
                 .IsRequired()
                 .HasDefaultValue(false);
@@ -32,6 +35,15 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.HasIndex(c => c.Slug)
                 .IsUnique();
+
+            builder.HasIndex(c => c.ImageMediaId)
+                .IsUnique();
+
+            builder.HasOne(c => c.ImageMedia)
+                .WithOne(m => m.CategoryImage)
+                .HasForeignKey<Category>(c => c.ImageMediaId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.ParentCategory)
                 .WithMany(c => c.ChildCategories)

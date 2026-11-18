@@ -1,4 +1,6 @@
-﻿namespace Shop_API.Models.ProductModels
+﻿using Shop_API.Models.MediaModels;
+
+namespace Shop_API.Models.ProductModels
 {
     public class Brand
     {
@@ -10,7 +12,9 @@
 
         public string? Description { get; set; }
 
-        public string? LogoUrl { get; set; }
+        public Guid? LogoMediaId { get; set; }
+
+        public Media? LogoMedia { get; set; }
 
         public bool IsActive { get; set; } = false;
 

@@ -23,7 +23,5 @@
         public ICollection<Category> Categories { get; set; } = new List<Category>();
 
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
-
-        
     }
 }

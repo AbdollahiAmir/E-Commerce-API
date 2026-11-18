@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Shop_API.Models.MediaModels;
 
-namespace Shop_API.Data.Configuration.MediaConfigurations
+namespace Shop_API.Data.Configuration.ProductConfigurations
 {
     public class MediaConfiguration : IEntityTypeConfiguration<Media>
     {
@@ -43,11 +43,11 @@ namespace Shop_API.Data.Configuration.MediaConfigurations
             builder.Property(m => m.CreatedAt)
                 .IsRequired();
 
-            builder.Property(m => m.RowVersion)
-                .IsRowVersion();
-
             builder.HasIndex(m => m.StorageKey)
                 .IsUnique();
+
+            builder.Property(m => m.RowVersion)
+                .IsRowVersion();
         }
     }
 }

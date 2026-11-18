@@ -23,9 +23,6 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             builder.Property(b => b.Description)
                 .HasMaxLength(1000);
 
-            builder.Property(b => b.LogoUrl)
-                .HasMaxLength(500);
-
             builder.Property(b => b.IsActive)
                 .IsRequired()
                 .HasDefaultValue(false);
@@ -35,6 +32,15 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.HasIndex(b => b.Slug)
                 .IsUnique();
+
+            builder.HasIndex(b => b.LogoMediaId)
+                .IsUnique()
+                .HasFilter("[LogoMediaId] IS NOT NULL");
+
+            builder.HasOne(b => b.LogoMedia)
+                .WithOne(m => m.BrandLogo)
+                .HasForeignKey<Brand>(b => b.LogoMediaId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(b => b.RowVersion)
                 .IsRowVersion();
