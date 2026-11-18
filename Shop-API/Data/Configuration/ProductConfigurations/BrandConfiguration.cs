@@ -4,7 +4,7 @@ using Shop_API.Models.ProductModels;
 
 namespace Shop_API.Data.Configuration.ProductConfigurations
 {
-    public class BrandConfiguration : IEntityTypeConfiguration<Brand> 
+    public class BrandConfiguration : IEntityTypeConfiguration<Brand>
     {
         public void Configure(EntityTypeBuilder<Brand> builder)
         {
@@ -28,7 +28,7 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.Property(b => b.IsActive)
                 .IsRequired()
-                .HasDefaultValue(true);
+                .HasDefaultValue(false);
 
             builder.Property(b => b.CreatedAt)
                 .IsRequired();

@@ -8,7 +8,12 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
     {
         public void Configure(EntityTypeBuilder<ProductVariantImage> builder)
         {
-            builder.ToTable("ProductVariantImages");
+            builder.ToTable("ProductVariantImages", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_ProductVariantImages_DisplayOrder",
+                    "[DisplayOrder] >= 0");
+            });
 
             builder.HasKey(i => i.Id);
 

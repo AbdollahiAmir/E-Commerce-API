@@ -16,7 +16,7 @@
 
         public ICollection<Category> ChildCategories { get; set; } = new List<Category>();
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

@@ -38,19 +38,13 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.Property(v => v.IsActive)
                 .IsRequired()
-                .HasDefaultValue(true);
+                .HasDefaultValue(false);
 
             builder.Property(v => v.CreatedAt)
                 .IsRequired();
 
             builder.HasIndex(v => v.SKU)
                 .IsUnique();
-
-            builder.HasOne(v => v.Product)
-                .WithMany(p => p.Variants)
-                .HasForeignKey(v => v.ProductId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

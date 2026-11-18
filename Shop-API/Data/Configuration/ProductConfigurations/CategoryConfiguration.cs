@@ -25,7 +25,7 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
 
             builder.Property(c => c.IsActive)
                 .IsRequired()
-                .HasDefaultValue(true);
+                .HasDefaultValue(false);
 
             builder.Property(c => c.CreatedAt)
                 .IsRequired();

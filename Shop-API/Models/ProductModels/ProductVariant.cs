@@ -16,11 +16,12 @@
 
         public int StockQuantity { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
+
         public ICollection<VariantAttribute> AttributeValues { get; set; } = new List<VariantAttribute>();
 
         public ICollection<ProductVariantImage> Images { get; set; } = new List<ProductVariantImage>();
