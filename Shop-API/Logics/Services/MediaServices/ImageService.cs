@@ -330,7 +330,7 @@ namespace Shop_API.Logics.Services.MediaServices
 
             var scale = (float)maxSide / longestSide;
 
-            var width = Math.Max(1,(int)Math.Round(source.Width * scale));
+            var width = Math.Max(1, (int)Math.Round(source.Width * scale));
 
             var height = Math.Max(1, (int)Math.Round(source.Height * scale));
 

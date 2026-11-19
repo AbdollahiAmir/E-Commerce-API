@@ -22,21 +22,25 @@ namespace Shop_API.Data.Configuration.MediaConfigurations
                 table.HasCheckConstraint(
                     "CK_Media_Height",
                     "[Height] IS NULL OR [Height] > 0");
+
+                table.HasCheckConstraint(
+                    "CK_Media_DeletionState",
+                    "([IsDeleting] = 0 AND [DeletionRequestedAt] IS NULL) OR ([IsDeleting] = 1 AND [DeletionRequestedAt] IS NOT NULL)");
             });
 
             builder.HasKey(m => m.Id);
 
             builder.Property(m => m.StorageKey)
-                .IsRequired()
-                .HasMaxLength(500);
+                .IsRequired();
+
+            builder.HasIndex(m => m.StorageKey)
+                .IsUnique();
 
             builder.Property(m => m.OriginalFileName)
-                .IsRequired()
-                .HasMaxLength(255);
+                .IsRequired();
 
             builder.Property(m => m.ContentType)
-                .IsRequired()
-                .HasMaxLength(100);
+                .IsRequired();
 
             builder.Property(m => m.Size)
                 .IsRequired();
@@ -44,8 +48,12 @@ namespace Shop_API.Data.Configuration.MediaConfigurations
             builder.Property(m => m.CreatedAt)
                 .IsRequired();
 
-            builder.HasIndex(m => m.StorageKey)
-                .IsUnique();
+            builder.Property(m => m.IsDeleting)
+                .HasDefaultValue(false)
+                .IsRequired();
+
+            builder.Property(m => m.DeletionRequestedAt)
+                .IsRequired(false);
 
             builder.Property(m => m.RowVersion)
                 .IsRowVersion();

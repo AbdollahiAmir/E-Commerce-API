@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Shop_API.Models.ProductModels;
 
@@ -24,9 +23,6 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             builder.Property(c => c.Description)
                 .HasMaxLength(1000);
 
-            builder.Property(c => c.ImageMediaId)
-                .IsRequired();
-
             builder.Property(c => c.IsActive)
                 .IsRequired()
                 .HasDefaultValue(false);
@@ -40,7 +36,6 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             builder.HasOne(c => c.ImageMedia)
                 .WithMany(m => m.CategoryImages)
                 .HasForeignKey(c => c.ImageMediaId)
-                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(c => c.ParentCategory)

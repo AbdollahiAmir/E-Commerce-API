@@ -1,5 +1,4 @@
-﻿
-using Shop_API.Models.MediaModels;
+﻿using Shop_API.Models.MediaModels;
 
 namespace Shop_API.Models.ProductModels
 {
@@ -13,9 +12,9 @@ namespace Shop_API.Models.ProductModels
 
         public string? Description { get; set; }
 
-        public Guid ImageMediaId { get; set; }
+        public Guid? ImageMediaId { get; set; }
 
-        public Media ImageMedia { get; set; } = null!;
+        public Media? ImageMedia { get; set; }
 
         public int? ParentCategoryId { get; set; }
 

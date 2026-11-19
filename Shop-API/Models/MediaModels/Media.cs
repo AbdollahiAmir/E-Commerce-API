@@ -21,6 +21,10 @@ namespace Shop_API.Models.MediaModels
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public bool IsDeleting { get; set; }
+
+        public DateTime? DeletionRequestedAt { get; set; }
+
         public byte[] RowVersion { get; set; } = null!;
 
         public ICollection<Brand> BrandLogos { get; set; } = new List<Brand>();
