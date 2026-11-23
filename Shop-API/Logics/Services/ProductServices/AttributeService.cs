@@ -4,10 +4,10 @@ using Shop_API.Data;
 using Shop_API.DTOs.AttributeDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
-using Shop_API.Logics.IServices.IAttributeServices;
+using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
-namespace Shop_API.Logics.Services.AttributeServices
+namespace Shop_API.Logics.Services.ProductServices
 {
     public class AttributeService : IAttributeService
     {

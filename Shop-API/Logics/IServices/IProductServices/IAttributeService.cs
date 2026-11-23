@@ -1,7 +1,7 @@
 ﻿using Shop_API.DTOs.AttributeDTOs;
 using Shop_API.DTOs.MediaDTOs;
 
-namespace Shop_API.Logics.IServices.IAttributeServices
+namespace Shop_API.Logics.IServices.IProductServices
 {
     public interface IAttributeService
     {

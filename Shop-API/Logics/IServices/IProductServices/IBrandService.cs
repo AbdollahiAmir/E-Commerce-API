@@ -1,7 +1,7 @@
 ﻿using Shop_API.DTOs.BrandDTOs;
 using Shop_API.DTOs.MediaDTOs;
 
-namespace Shop_API.Logics.IServices.IBrandServices
+namespace Shop_API.Logics.IServices.IProductServices
 {
     public interface IBrandService
     {

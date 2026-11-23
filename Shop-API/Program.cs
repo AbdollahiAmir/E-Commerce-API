@@ -2,14 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Shop_API.Data;
 using Shop_API.Handlers;
-using Shop_API.Logics.IServices.IAttributeServices;
-using Shop_API.Logics.IServices.IBrandServices;
-using Shop_API.Logics.IServices.ICategoryServices;
 using Shop_API.Logics.IServices.IMediaServices;
-using Shop_API.Logics.Services.AttributeServices;
-using Shop_API.Logics.Services.BrandServices;
-using Shop_API.Logics.Services.CategoryServices;
+using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Logics.Services.MediaServices;
+using Shop_API.Logics.Services.ProductServices;
 using Shop_API.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +35,7 @@ builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAttributeService, AttributeService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 

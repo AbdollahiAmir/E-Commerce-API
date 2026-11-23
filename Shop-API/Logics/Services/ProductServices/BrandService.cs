@@ -5,10 +5,10 @@ using Shop_API.DTOs.BrandDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.Helpers;
-using Shop_API.Logics.IServices.IBrandServices;
+using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
-namespace Shop_API.Logics.Services.BrandServices
+namespace Shop_API.Logics.Services.ProductServices
 {
     public class BrandService : IBrandService
     {

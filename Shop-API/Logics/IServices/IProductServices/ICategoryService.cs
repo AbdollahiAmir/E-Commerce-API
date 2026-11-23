@@ -1,7 +1,7 @@
 ﻿using Shop_API.DTOs.CategoryDTOs;
 using Shop_API.DTOs.MediaDTOs;
 
-namespace Shop_API.Logics.IServices.ICategoryServices
+namespace Shop_API.Logics.IServices.IProductServices
 {
     public interface ICategoryService
     {

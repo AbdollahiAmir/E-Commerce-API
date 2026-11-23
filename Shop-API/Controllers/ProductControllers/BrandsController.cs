@@ -2,7 +2,7 @@
 using Shop_API.DTOs.BrandDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
-using Shop_API.Logics.IServices.IBrandServices;
+using Shop_API.Logics.IServices.IProductServices;
 
 namespace Shop_API.Controllers.ProductControllers
 {
