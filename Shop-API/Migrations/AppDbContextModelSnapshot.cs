@@ -409,6 +409,9 @@ namespace Shop_API.Migrations
                         .IsUnique()
                         .HasFilter("[IsMain] = 1");
 
+                    b.HasIndex("ProductVariantId", "MediaId")
+                        .IsUnique();
+
                     b.ToTable("ProductVariantImages", null, t =>
                         {
                             t.HasCheckConstraint("CK_ProductVariantImages_DisplayOrder", "[DisplayOrder] >= 0");

@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Shop_API.Models.ProductModels;
 
@@ -42,6 +41,13 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             })
                 .IsUnique()
                 .HasFilter("[IsMain] = 1");
+
+            builder.HasIndex(i => new
+            {
+                i.ProductVariantId,
+                i.MediaId
+            })
+                .IsUnique();
 
             builder.HasOne(i => i.ProductVariant)
                 .WithMany(v => v.Images)
