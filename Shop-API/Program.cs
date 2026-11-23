@@ -3,8 +3,10 @@ using Scalar.AspNetCore;
 using Shop_API.Data;
 using Shop_API.Handlers;
 using Shop_API.Logics.IServices.IBrandServices;
+using Shop_API.Logics.IServices.ICategoryServices;
 using Shop_API.Logics.IServices.IMediaServices;
 using Shop_API.Logics.Services.BrandServices;
+using Shop_API.Logics.Services.CategoryServices;
 using Shop_API.Logics.Services.MediaServices;
 using Shop_API.Options;
 
@@ -33,6 +35,7 @@ builder.Services.PostConfigure<ImageStorageOptions>(options =>
 builder.Services.AddSingleton<IImageService, ImageService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 
