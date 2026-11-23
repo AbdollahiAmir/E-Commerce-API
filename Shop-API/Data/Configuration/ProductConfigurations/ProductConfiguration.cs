@@ -33,7 +33,7 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
             builder.HasOne(p => p.Brand)
                 .WithMany(b => b.Products)
                 .HasForeignKey(p => p.BrandId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(p => p.Variants)
                 .WithOne(v => v.Product)

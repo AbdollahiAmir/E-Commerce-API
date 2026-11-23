@@ -487,7 +487,7 @@ namespace Shop_API.Migrations
                     b.HasOne("Shop_API.Models.ProductModels.Brand", "Brand")
                         .WithMany("Products")
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Brand");
                 });

@@ -25,4 +25,8 @@
 		<PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="4.157.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Logics\IServices\IProductServices\" />
+	</ItemGroup>
+
 </Project>
