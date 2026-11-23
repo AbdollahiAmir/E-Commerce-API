@@ -20,6 +20,10 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
                 .IsRequired()
                 .HasMaxLength(100);
 
+            builder.Property(a => a.IsColor)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             builder.Property(a => a.IsActive)
                 .IsRequired()
                 .HasDefaultValue(false);

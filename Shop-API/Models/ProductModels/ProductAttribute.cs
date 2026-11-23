@@ -8,6 +8,8 @@
 
         public string Code { get; set; } = string.Empty;
 
+        public bool IsColor { get; set; }
+
         public bool IsActive { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
