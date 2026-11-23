@@ -1,10 +1,10 @@
-﻿using System.Globalization;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Shop_API.Data;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.IServices.IMediaServices;
 using Shop_API.Models.MediaModels;
+using System.Globalization;
 
 namespace Shop_API.Logics.Services.MediaServices
 {

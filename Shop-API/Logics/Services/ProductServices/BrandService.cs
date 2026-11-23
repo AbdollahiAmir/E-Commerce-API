@@ -140,14 +140,14 @@ namespace Shop_API.Logics.Services.ProductServices
             var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query.OrderBy(b => b.Name).ThenBy(b => b.Id).Skip((int)skip).Take(pageSize).Select(b => new BrandListDto
-                {
-                    Id = b.Id,
-                    Name = b.Name,
-                    Slug = b.Slug,
-                    LogoMediaId = b.LogoMediaId,
-                    IsActive = b.IsActive,
-                    ProductCount = b.Products.Count()
-                }).ToListAsync(cancellationToken);
+            {
+                Id = b.Id,
+                Name = b.Name,
+                Slug = b.Slug,
+                LogoMediaId = b.LogoMediaId,
+                IsActive = b.IsActive,
+                ProductCount = b.Products.Count()
+            }).ToListAsync(cancellationToken);
 
             return new PagedResult<BrandListDto>
             {
@@ -161,16 +161,16 @@ namespace Shop_API.Logics.Services.ProductServices
         public Task<BrandDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.Brands.AsNoTracking().Where(b => b.Id == id).Select(b => new BrandDto
-                {
-                    Id = b.Id,
-                    Name = b.Name,
-                    Slug = b.Slug,
-                    Description = b.Description,
-                    LogoMediaId = b.LogoMediaId,
-                    IsActive = b.IsActive,
-                    CreatedAt = b.CreatedAt,
-                    UpdatedAt = b.UpdatedAt
-                }).FirstOrDefaultAsync(cancellationToken);
+            {
+                Id = b.Id,
+                Name = b.Name,
+                Slug = b.Slug,
+                Description = b.Description,
+                LogoMediaId = b.LogoMediaId,
+                IsActive = b.IsActive,
+                CreatedAt = b.CreatedAt,
+                UpdatedAt = b.UpdatedAt
+            }).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<BrandDto> EditAsync(int id, EditBrandDto dto, CancellationToken cancellationToken = default)

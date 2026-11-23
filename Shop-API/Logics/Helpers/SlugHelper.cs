@@ -1,6 +1,6 @@
-﻿using System.Globalization;
+﻿using Shop_API.Exceptions;
+using System.Globalization;
 using System.Text;
-using Shop_API.Exceptions;
 
 namespace Shop_API.Logics.Helpers
 {

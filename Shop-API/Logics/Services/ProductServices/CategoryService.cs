@@ -69,11 +69,11 @@ namespace Shop_API.Logics.Services.ProductServices
             }
 
             var items = await _context.Categories.AsNoTracking().Where(c => ancestorIds.Contains(c.Id)).Select(c => new CategoryBreadcrumbDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Slug = c.Slug
-                }).ToListAsync(cancellationToken);
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Slug = c.Slug
+            }).ToListAsync(cancellationToken);
 
             var byId = items.ToDictionary(i => i.Id);
 
@@ -212,16 +212,16 @@ namespace Shop_API.Logics.Services.ProductServices
             var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query.OrderBy(c => c.Name).ThenBy(c => c.Id).Skip((int)skip).Take(pageSize).Select(c => new CategoryListDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Slug = c.Slug,
-                    ParentCategoryId = c.ParentCategoryId,
-                    ImageMediaId = c.ImageMediaId,
-                    IsActive = c.IsActive,
-                    ChildCount = c.ChildCategories.Count(),
-                    DirectProductCount = c.Products.Count()
-                }).ToListAsync(cancellationToken);
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Slug = c.Slug,
+                ParentCategoryId = c.ParentCategoryId,
+                ImageMediaId = c.ImageMediaId,
+                IsActive = c.IsActive,
+                ChildCount = c.ChildCategories.Count(),
+                DirectProductCount = c.Products.Count()
+            }).ToListAsync(cancellationToken);
 
             return new PagedResult<CategoryListDto>
             {
@@ -235,17 +235,17 @@ namespace Shop_API.Logics.Services.ProductServices
         public async Task<IReadOnlyList<CategoryTreeDto>> GetTreeAsync(CancellationToken cancellationToken = default)
         {
             var rows = await _context.Categories.AsNoTracking().OrderBy(c => c.Name).ThenBy(c => c.Id).Select(c => new
+            {
+                c.ParentCategoryId,
+                Node = new CategoryTreeDto
                 {
-                    c.ParentCategoryId,
-                    Node = new CategoryTreeDto
-                    {
-                        Id = c.Id,
-                        Name = c.Name,
-                        Slug = c.Slug,
-                        ImageMediaId = c.ImageMediaId,
-                        IsActive = c.IsActive
-                    }
-                }).ToListAsync(cancellationToken);
+                    Id = c.Id,
+                    Name = c.Name,
+                    Slug = c.Slug,
+                    ImageMediaId = c.ImageMediaId,
+                    IsActive = c.IsActive
+                }
+            }).ToListAsync(cancellationToken);
 
             var nodes = rows.ToDictionary(r => r.Node.Id, r => r.Node);
 

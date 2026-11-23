@@ -136,14 +136,14 @@ namespace Shop_API.Logics.Services.ProductServices
             var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query.OrderBy(a => a.Name).ThenBy(a => a.Id).Skip((int)skip).Take(pageSize).Select(a => new AttributeListDto
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    Code = a.Code,
-                    IsColor = a.IsColor,
-                    IsActive = a.IsActive,
-                    UsageCount = a.VariantAttributes.Count()
-                }).ToListAsync(cancellationToken);
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Code = a.Code,
+                IsColor = a.IsColor,
+                IsActive = a.IsActive,
+                UsageCount = a.VariantAttributes.Count()
+            }).ToListAsync(cancellationToken);
 
             return new PagedResult<AttributeListDto>
             {
@@ -157,15 +157,15 @@ namespace Shop_API.Logics.Services.ProductServices
         public Task<AttributeDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.ProductAttributes.AsNoTracking().Where(a => a.Id == id).Select(a => new AttributeDto
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    Code = a.Code,
-                    IsColor = a.IsColor,
-                    IsActive = a.IsActive,
-                    CreatedAt = a.CreatedAt,
-                    UpdatedAt = a.UpdatedAt
-                }).FirstOrDefaultAsync(cancellationToken);
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Code = a.Code,
+                IsColor = a.IsColor,
+                IsActive = a.IsActive,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt
+            }).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<AttributeDto> EditAsync(int id, EditAttributeDto dto, CancellationToken cancellationToken = default)

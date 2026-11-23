@@ -185,16 +185,16 @@ namespace Shop_API.Logics.Services.ProductServices
             var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query.OrderByDescending(p => p.CreatedAt).ThenByDescending(p => p.Id).Skip((int)skip).Take(pageSize).Select(p => new ProductListDto
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Slug = p.Slug,
-                    BrandId = p.BrandId,
-                    BrandName = p.Brand != null ? p.Brand.Name : null,
-                    IsActive = p.IsActive,
-                    VariantCount = p.Variants.Count(),
-                    CreatedAt = p.CreatedAt
-                }).ToListAsync(cancellationToken);
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                BrandId = p.BrandId,
+                BrandName = p.Brand != null ? p.Brand.Name : null,
+                IsActive = p.IsActive,
+                VariantCount = p.Variants.Count(),
+                CreatedAt = p.CreatedAt
+            }).ToListAsync(cancellationToken);
 
             return new PagedResult<ProductListDto>
             {
@@ -208,23 +208,23 @@ namespace Shop_API.Logics.Services.ProductServices
         public Task<ProductDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.Products.AsNoTracking().Where(p => p.Id == id).Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                BrandId = p.BrandId,
+                BrandName = p.Brand != null ? p.Brand.Name : null,
+                Categories = p.Categories.OrderBy(c => c.Name).Select(c => new ProductCategoryDto
                 {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Slug = p.Slug,
-                    BrandId = p.BrandId,
-                    BrandName = p.Brand != null ? p.Brand.Name : null,
-                    Categories = p.Categories.OrderBy(c => c.Name).Select(c => new ProductCategoryDto
-                        {
-                            Id = c.Id,
-                            Name = c.Name,
-                            Slug = c.Slug
-                        }).ToList(),
-                    IsActive = p.IsActive,
-                    VariantCount = p.Variants.Count(),
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
-                }).FirstOrDefaultAsync(cancellationToken);
+                    Id = c.Id,
+                    Name = c.Name,
+                    Slug = c.Slug
+                }).ToList(),
+                IsActive = p.IsActive,
+                VariantCount = p.Variants.Count(),
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt
+            }).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<ProductDto> EditAsync(int id, EditProductDto dto, CancellationToken cancellationToken = default)
