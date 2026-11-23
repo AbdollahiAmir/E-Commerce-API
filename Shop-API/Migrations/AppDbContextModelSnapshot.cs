@@ -311,6 +311,11 @@ namespace Shop_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<byte[]>("CombinationKey")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varbinary(32)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -351,9 +356,10 @@ namespace Shop_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
-
                     b.HasIndex("SKU")
+                        .IsUnique();
+
+                    b.HasIndex("ProductId", "CombinationKey")
                         .IsUnique();
 
                     b.ToTable("ProductVariants", null, t =>

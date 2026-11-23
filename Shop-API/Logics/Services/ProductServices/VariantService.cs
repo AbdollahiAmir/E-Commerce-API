@@ -4,6 +4,7 @@ using Shop_API.Data;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.DTOs.VariantDTOs;
 using Shop_API.Exceptions;
+using Shop_API.Logics.Helpers;
 using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
@@ -16,6 +17,8 @@ namespace Shop_API.Logics.Services.ProductServices
         private const int ValueMaxLength = 150;
         private const int MaxAttributesPerVariant = 10;
         private const decimal MaxPrice = 1_000_000_000_000m;
+        private const string CombinationIndexName = "IX_ProductVariants_ProductId_CombinationKey";
+        private const string CombinationExistsMessage = "برای این محصول نوعی با همین ترکیب ویژگی‌ها وجود دارد.";
         private const string ReferenceDeletedMessage = "محصول یا ویژگی انتخاب‌شده هم‌زمان حذف شد. لطفاً دوباره تلاش کنید.";
         private const string DeleteBlockedMessage = "این نوع محصول به داده‌ی دیگری وابسته است و قابل حذف نیست.";
 
@@ -77,12 +80,12 @@ namespace Shop_API.Logics.Services.ProductServices
             return color.Length == 7 && color[0] == '#' && color.Skip(1).All(char.IsAsciiHexDigit);
         }
 
-        private static string BuildKey(IEnumerable<(int AttributeId, string Value)> items)
+        private static byte[] BuildKey(IEnumerable<ResolvedAttribute> attributes)
         {
-            return string.Join("|", items.OrderBy(i => i.AttributeId).Select(i => $"{i.AttributeId}:{i.Value.ToUpperInvariant()}"));
+            return VariantCombinationKey.Build(attributes.Select(a => (a.AttributeId, a.Value)));
         }
 
-        private async Task<List<ResolvedAttribute>> ResolveAttributesAsync(List<VariantAttributeInputDto> inputs, CancellationToken cancellationToken)
+        private async Task<List<ResolvedAttribute>> ResolveAttributesAsync(List<VariantAttributeInputDto> inputs, IEnumerable<VariantAttribute>? existing, CancellationToken cancellationToken)
         {
             if (inputs.Count > MaxAttributesPerVariant)
             {
@@ -121,6 +124,16 @@ namespace Shop_API.Logics.Services.ProductServices
 
                 var colorCode = string.IsNullOrWhiteSpace(input.ColorCode) ? null : input.ColorCode.Trim().ToUpperInvariant();
 
+                if (!attribute.IsActive)
+                {
+                    var retained = existing != null && existing.Any(e => e.ProductAttributeId == attribute.Id && e.Value == value && e.ColorCode == colorCode);
+
+                    if (!retained)
+                    {
+                        throw new ArgumentException($"ویژگی «{attribute.Name}» غیرفعال است و برای این نوع محصول قابل استفاده نیست.");
+                    }
+                }
+
                 if (attribute.IsColor && colorCode == null)
                 {
                     throw new ArgumentException($"برای ویژگی رنگی «{attribute.Name}» کد رنگ الزامی است.");
@@ -142,21 +155,13 @@ namespace Shop_API.Logics.Services.ProductServices
             return result;
         }
 
-        private async Task EnsureCombinationUniqueAsync(int productId, int? excludeVariantId, List<ResolvedAttribute> attributes, CancellationToken cancellationToken)
+        private async Task EnsureCombinationUniqueAsync(int productId, int? excludeVariantId, byte[] key, CancellationToken cancellationToken)
         {
-            var others = await _context.ProductVariants.AsNoTracking().Where(v => v.ProductId == productId && (excludeVariantId == null || v.Id != excludeVariantId)).Select(v => new
-                {
-                    Values = v.AttributeValues.Select(a => new { a.ProductAttributeId, a.Value }).ToList()
-                }).ToListAsync(cancellationToken);
+            var exists = await _context.ProductVariants.AsNoTracking().AnyAsync(v => v.ProductId == productId && v.CombinationKey == key && (excludeVariantId == null || v.Id != excludeVariantId), cancellationToken);
 
-            var key = BuildKey(attributes.Select(a => (a.AttributeId, a.Value)));
-
-            foreach (var other in others)
+            if (exists)
             {
-                if (BuildKey(other.Values.Select(a => (a.ProductAttributeId, a.Value))) == key)
-                {
-                    throw new ConflictException("برای این محصول نوعی با همین ترکیب ویژگی‌ها وجود دارد.");
-                }
+                throw new ConflictException(CombinationExistsMessage);
             }
         }
 
@@ -170,8 +175,13 @@ namespace Shop_API.Logics.Services.ProductServices
             {
                 throw new ConflictException("این نوع محصول هم‌زمان توسط عملیات دیگری تغییر کرده است. لطفاً دوباره تلاش کنید.");
             }
-            catch (DbUpdateException exception) when (exception.GetBaseException() is SqlException { Number: 2601 or 2627 })
+            catch (DbUpdateException exception) when (exception.GetBaseException() is SqlException { Number: 2601 or 2627 } sqlException)
             {
+                if (sqlException.Message.Contains(CombinationIndexName, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ConflictException(CombinationExistsMessage);
+                }
+
                 throw new ConflictException("این SKU هم‌زمان توسط نوع دیگری ثبت شد. لطفاً دوباره تلاش کنید.");
             }
             catch (DbUpdateException exception) when (exception.GetBaseException() is SqlException { Number: 547 })
@@ -207,9 +217,11 @@ namespace Shop_API.Logics.Services.ProductServices
 
             var stock = ValidateStock(dto.StockQuantity);
 
-            var attributes = await ResolveAttributesAsync(dto.Attributes ?? [], cancellationToken);
+            var attributes = await ResolveAttributesAsync(dto.Attributes ?? [], null, cancellationToken);
 
-            await EnsureCombinationUniqueAsync(dto.ProductId, null, attributes, cancellationToken);
+            var key = BuildKey(attributes);
+
+            await EnsureCombinationUniqueAsync(dto.ProductId, null, key, cancellationToken);
 
             var variant = new ProductVariant
             {
@@ -219,6 +231,7 @@ namespace Shop_API.Logics.Services.ProductServices
                 Price = price,
                 StockQuantity = stock,
                 IsActive = dto.IsActive,
+                CombinationKey = key,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -280,15 +293,15 @@ namespace Shop_API.Logics.Services.ProductServices
             var totalCount = await query.CountAsync(cancellationToken);
 
             var items = await query.OrderByDescending(v => v.CreatedAt).ThenByDescending(v => v.Id).Skip((int)skip).Take(pageSize).Select(v => new VariantListDto
-                {
-                    Id = v.Id,
-                    ProductId = v.ProductId,
-                    ProductName = v.Product.Name,
-                    Sku = v.SKU,
-                    Price = v.Price,
-                    StockQuantity = v.StockQuantity,
-                    IsActive = v.IsActive
-                }).ToListAsync(cancellationToken);
+            {
+                Id = v.Id,
+                ProductId = v.ProductId,
+                ProductName = v.Product.Name,
+                Sku = v.SKU,
+                Price = v.Price,
+                StockQuantity = v.StockQuantity,
+                IsActive = v.IsActive
+            }).ToListAsync(cancellationToken);
 
             return new PagedResult<VariantListDto>
             {
@@ -302,27 +315,27 @@ namespace Shop_API.Logics.Services.ProductServices
         public Task<VariantDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return _context.ProductVariants.AsNoTracking().Where(v => v.Id == id).Select(v => new VariantDto
+            {
+                Id = v.Id,
+                ProductId = v.ProductId,
+                ProductName = v.Product.Name,
+                Sku = v.SKU,
+                Description = v.Description,
+                Price = v.Price,
+                StockQuantity = v.StockQuantity,
+                IsActive = v.IsActive,
+                Attributes = v.AttributeValues.OrderBy(a => a.ProductAttribute.Name).Select(a => new VariantAttributeValueDto
                 {
-                    Id = v.Id,
-                    ProductId = v.ProductId,
-                    ProductName = v.Product.Name,
-                    Sku = v.SKU,
-                    Description = v.Description,
-                    Price = v.Price,
-                    StockQuantity = v.StockQuantity,
-                    IsActive = v.IsActive,
-                    Attributes = v.AttributeValues.OrderBy(a => a.ProductAttribute.Name).Select(a => new VariantAttributeValueDto
-                        {
-                            AttributeId = a.ProductAttributeId,
-                            AttributeName = a.ProductAttribute.Name,
-                            AttributeCode = a.ProductAttribute.Code,
-                            IsColor = a.ProductAttribute.IsColor,
-                            Value = a.Value,
-                            ColorCode = a.ColorCode
-                        }).ToList(),
-                    CreatedAt = v.CreatedAt,
-                    UpdatedAt = v.UpdatedAt
-                }).FirstOrDefaultAsync(cancellationToken);
+                    AttributeId = a.ProductAttributeId,
+                    AttributeName = a.ProductAttribute.Name,
+                    AttributeCode = a.ProductAttribute.Code,
+                    IsColor = a.ProductAttribute.IsColor,
+                    Value = a.Value,
+                    ColorCode = a.ColorCode
+                }).ToList(),
+                CreatedAt = v.CreatedAt,
+                UpdatedAt = v.UpdatedAt
+            }).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<VariantDto> EditAsync(int id, EditVariantDto dto, CancellationToken cancellationToken = default)
@@ -396,9 +409,18 @@ namespace Shop_API.Logics.Services.ProductServices
 
             if (dto.Attributes != null)
             {
-                var attributes = await ResolveAttributesAsync(dto.Attributes, cancellationToken);
+                var attributes = await ResolveAttributesAsync(dto.Attributes, variant.AttributeValues, cancellationToken);
 
-                await EnsureCombinationUniqueAsync(variant.ProductId, variant.Id, attributes, cancellationToken);
+                var key = BuildKey(attributes);
+
+                if (!key.AsSpan().SequenceEqual(variant.CombinationKey))
+                {
+                    await EnsureCombinationUniqueAsync(variant.ProductId, variant.Id, key, cancellationToken);
+
+                    variant.CombinationKey = key;
+
+                    changed = true;
+                }
 
                 var desiredIds = attributes.Select(a => a.AttributeId).ToHashSet();
 

@@ -71,6 +71,18 @@ namespace Shop_API.Logics.Services.ProductServices
             }
         }
 
+        private async Task LockVariantAsync(int variantId, CancellationToken cancellationToken)
+        {
+            var locked = await _context.Database
+                .SqlQuery<int>($"SELECT [Id] AS [Value] FROM [ProductVariants] WITH (UPDLOCK, ROWLOCK) WHERE [Id] = {variantId}")
+                .ToListAsync(cancellationToken);
+
+            if (locked.Count == 0)
+            {
+                throw new NotFoundException("نوع محصول مورد نظر یافت نشد.");
+            }
+        }
+
         private Task DemoteOtherMainImagesAsync(int variantId, int? exceptImageId, CancellationToken cancellationToken)
         {
             return _context.ProductVariantImages
@@ -86,12 +98,11 @@ namespace Shop_API.Logics.Services.ProductServices
 
         public async Task<VariantImageDto> AddAsync(int variantId, AddVariantImageDto dto, CancellationToken cancellationToken = default)
         {
-            var variantExists = await _context.ProductVariants.AnyAsync(v => v.Id == variantId, cancellationToken);
+            var displayOrder = dto.DisplayOrder.HasValue ? ValidateDisplayOrder(dto.DisplayOrder.Value) : (int?)null;
 
-            if (!variantExists)
-            {
-                throw new NotFoundException("نوع محصول مورد نظر یافت نشد.");
-            }
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            await LockVariantAsync(variantId, cancellationToken);
 
             var mediaAvailable = await _context.Media.AnyAsync(m => m.Id == dto.MediaId && !m.IsDeleting, cancellationToken);
 
@@ -100,20 +111,20 @@ namespace Shop_API.Logics.Services.ProductServices
                 throw new ArgumentException("تصویر انتخاب‌شده یافت نشد یا در حال حذف است.");
             }
 
-            var displayOrder = dto.DisplayOrder.HasValue ? ValidateDisplayOrder(dto.DisplayOrder.Value) : (int?)null;
+            var existing = await _context.ProductVariantImages
+                .AsNoTracking()
+                .Where(i => i.ProductVariantId == variantId)
+                .Select(i => new { i.MediaId, i.DisplayOrder })
+                .ToListAsync(cancellationToken);
 
-            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-
-            var count = await _context.ProductVariantImages.CountAsync(i => i.ProductVariantId == variantId, cancellationToken);
+            var count = existing.Count;
 
             if (count >= MaxImagesPerVariant)
             {
                 throw new ConflictException($"هر نوع محصول حداکثر می‌تواند {MaxImagesPerVariant} تصویر داشته باشد.");
             }
 
-            var duplicate = await _context.ProductVariantImages.AnyAsync(i => i.ProductVariantId == variantId && i.MediaId == dto.MediaId, cancellationToken);
-
-            if (duplicate)
+            if (existing.Any(i => i.MediaId == dto.MediaId))
             {
                 throw new ConflictException("این تصویر قبلاً برای این نوع محصول ثبت شده است.");
             }
@@ -125,14 +136,7 @@ namespace Shop_API.Logics.Services.ProductServices
                 await DemoteOtherMainImagesAsync(variantId, null, cancellationToken);
             }
 
-            if (displayOrder == null)
-            {
-                var maxOrder = await _context.ProductVariantImages
-                    .Where(i => i.ProductVariantId == variantId)
-                    .MaxAsync(i => (int?)i.DisplayOrder, cancellationToken);
-
-                displayOrder = (maxOrder ?? -1) + 1;
-            }
+            displayOrder ??= count == 0 ? 0 : existing.Max(i => i.DisplayOrder) + 1;
 
             var image = new ProductVariantImage
             {
@@ -182,9 +186,11 @@ namespace Shop_API.Logics.Services.ProductServices
 
         public async Task<VariantImageDto> EditAsync(int variantId, int imageId, EditVariantImageDto dto, CancellationToken cancellationToken = default)
         {
-            var image = await GetImageAsync(variantId, imageId, cancellationToken);
-
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            await LockVariantAsync(variantId, cancellationToken);
+
+            var image = await GetImageAsync(variantId, imageId, cancellationToken);
 
             var changed = false;
 
@@ -241,9 +247,11 @@ namespace Shop_API.Logics.Services.ProductServices
 
         public async Task DeleteAsync(int variantId, int imageId, CancellationToken cancellationToken = default)
         {
-            var image = await GetImageAsync(variantId, imageId, cancellationToken);
-
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            await LockVariantAsync(variantId, cancellationToken);
+
+            var image = await GetImageAsync(variantId, imageId, cancellationToken);
 
             var wasMain = image.IsMain;
 
@@ -253,17 +261,18 @@ namespace Shop_API.Logics.Services.ProductServices
 
             if (wasMain)
             {
-                var next = await _context.ProductVariantImages
+                var nextId = await _context.ProductVariantImages
                     .Where(i => i.ProductVariantId == variantId)
                     .OrderBy(i => i.DisplayOrder)
                     .ThenBy(i => i.Id)
+                    .Select(i => (int?)i.Id)
                     .FirstOrDefaultAsync(cancellationToken);
 
-                if (next != null)
+                if (nextId.HasValue)
                 {
-                    next.IsMain = true;
-
-                    await SaveAsync(cancellationToken);
+                    await _context.ProductVariantImages
+                        .Where(i => i.Id == nextId.Value)
+                        .ExecuteUpdateAsync(setters => setters.SetProperty(i => i.IsMain, true), cancellationToken);
                 }
             }
 

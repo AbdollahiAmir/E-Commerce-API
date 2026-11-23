@@ -40,10 +40,21 @@ namespace Shop_API.Data.Configuration.ProductConfigurations
                 .IsRequired()
                 .HasDefaultValue(false);
 
+            builder.Property(v => v.CombinationKey)
+                .IsRequired()
+                .HasMaxLength(32);
+
             builder.Property(v => v.CreatedAt)
                 .IsRequired();
 
             builder.HasIndex(v => v.SKU)
+                .IsUnique();
+
+            builder.HasIndex(v => new
+            {
+                v.ProductId,
+                v.CombinationKey
+            })
                 .IsUnique();
 
             builder.Property(v => v.RowVersion)

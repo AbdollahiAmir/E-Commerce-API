@@ -18,6 +18,8 @@
 
         public bool IsActive { get; set; } = false;
 
+        public byte[] CombinationKey { get; set; } = null!;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
