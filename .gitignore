@@ -15,6 +15,7 @@ TestResults/
 *.log
 
 PrivateUploads/
+Shop-API/Uploads/
 
 *.mdf
 *.ldf

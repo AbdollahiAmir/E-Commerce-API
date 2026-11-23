@@ -3,7 +3,7 @@ using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.IServices.IMediaServices;
 
-namespace Shop_API.Controllers
+namespace Shop_API.Controllers.MediaControllers
 {
     [Route("api/[controller]")]
     [ApiController]
