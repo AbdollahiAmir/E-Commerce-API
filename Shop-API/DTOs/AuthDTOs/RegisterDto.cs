@@ -9,7 +9,7 @@ namespace Shop_API.DTOs.AuthDTOs
         public string FullName { get; set; } = null!;
 
         [Required(ErrorMessage = "شماره موبایل الزامی است.")]
-        [StringLength(11, ErrorMessage = "شماره موبایل معتبر نیست.")]
+        [StringLength(20, ErrorMessage = "شماره موبایل معتبر نیست.")]
         public string PhoneNumber { get; set; } = null!;
 
         [Required(ErrorMessage = "رمز عبور الزامی است.")]
