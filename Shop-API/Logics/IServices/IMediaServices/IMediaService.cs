@@ -6,7 +6,7 @@ namespace Shop_API.Logics.IServices.IMediaServices
     {
         Task<MediaUploadDto> UploadAsync(IFormFile image, CancellationToken cancellationToken = default);
 
-        Task<PagedResult<MediaListDto>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+        Task<PagedResult<MediaListDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default);
 
         Task<MediaUploadDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

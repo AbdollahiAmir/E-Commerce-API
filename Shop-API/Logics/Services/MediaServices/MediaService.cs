@@ -129,7 +129,7 @@ namespace Shop_API.Logics.Services.MediaServices
             };
         }
 
-        public async Task<PagedResult<MediaListDto>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<PagedResult<MediaListDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
         {
             if (page < 1)
             {
@@ -151,6 +151,13 @@ namespace Shop_API.Logics.Services.MediaServices
             var query = _context.Media
                 .AsNoTracking()
                 .Where(m => !m.IsDeleting);
+
+            var term = search?.Trim();
+
+            if (!string.IsNullOrEmpty(term))
+            {
+                query = query.Where(m => m.OriginalFileName.Contains(term));
+            }
 
             var totalCount = await query.CountAsync(cancellationToken);
 

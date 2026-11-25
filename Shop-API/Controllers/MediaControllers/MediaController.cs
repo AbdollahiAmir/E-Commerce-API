@@ -27,9 +27,13 @@ namespace Shop_API.Controllers.MediaControllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<MediaListDto>>> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<PagedResult<MediaListDto>>> GetPaged(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? search = null,
+            CancellationToken cancellationToken = default)
         {
-            var result = await _mediaService.GetPagedAsync(page, pageSize, cancellationToken);
+            var result = await _mediaService.GetPagedAsync(page, pageSize, search, cancellationToken);
 
             return Ok(result);
         }
