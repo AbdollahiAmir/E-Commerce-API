@@ -12,6 +12,12 @@ namespace Shop_API.Logics.IServices.IAuthServices
 
         Task LogoutAsync(RefreshTokenRequestDto dto, CancellationToken cancellationToken = default);
 
+        Task LogoutAllAsync(int userId, CancellationToken cancellationToken = default);
+
         Task<MeDto> GetMeAsync(int userId, CancellationToken cancellationToken = default);
+
+        Task<MeDto> EditMeAsync(int userId, EditMeDto dto, CancellationToken cancellationToken = default);
+
+        Task<AuthResponseDto> ChangePasswordAsync(int userId, ChangePasswordDto dto, CancellationToken cancellationToken = default);
     }
 }

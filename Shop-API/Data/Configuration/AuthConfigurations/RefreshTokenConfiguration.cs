@@ -27,6 +27,8 @@ namespace Shop_API.Data.Configuration.AuthConfigurations
 
             builder.HasIndex(t => t.UserId);
 
+            builder.HasIndex(t => t.ExpiresAt);
+
             builder.HasOne(t => t.User)
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(t => t.UserId)

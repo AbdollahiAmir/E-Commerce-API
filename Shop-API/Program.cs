@@ -162,6 +162,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IVariantService, VariantService>();
 builder.Services.AddScoped<IVariantImageService, VariantImageService>();
 
+builder.Services.AddHostedService<RefreshTokenCleanupService>();
+
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())

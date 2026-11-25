@@ -59,11 +59,39 @@ namespace Shop_API.Controllers.AuthControllers
             return NoContent();
         }
 
+        [HttpPost("logout-all")]
+        [Authorize]
+        public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
+        {
+            await _authService.LogoutAllAsync(User.GetUserId(), cancellationToken);
+
+            return NoContent();
+        }
+
         [HttpGet("me")]
         [Authorize]
         public async Task<ActionResult<MeDto>> Me(CancellationToken cancellationToken)
         {
             var result = await _authService.GetMeAsync(User.GetUserId(), cancellationToken);
+
+            return Ok(result);
+        }
+
+        [HttpPatch("me")]
+        [Authorize]
+        public async Task<ActionResult<MeDto>> EditMe([FromBody] EditMeDto request, CancellationToken cancellationToken)
+        {
+            var result = await _authService.EditMeAsync(User.GetUserId(), request, cancellationToken);
+
+            return Ok(result);
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
+        public async Task<ActionResult<AuthResponseDto>> ChangePassword([FromBody] ChangePasswordDto request, CancellationToken cancellationToken)
+        {
+            var result = await _authService.ChangePasswordAsync(User.GetUserId(), request, cancellationToken);
 
             return Ok(result);
         }

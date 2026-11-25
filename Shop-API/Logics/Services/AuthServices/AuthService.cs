@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Shop_API.Constants;
@@ -66,6 +67,27 @@ namespace Shop_API.Logics.Services.AuthServices
             }
 
             throw new ArgumentException(string.Join(" ", result.Errors.Select(e => e.Description)));
+        }
+
+        private static void EnsureNotLocked(ApplicationUser user)
+        {
+            var now = DateTimeOffset.UtcNow;
+
+            if (user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > now)
+            {
+                var minutes = (int)Math.Ceiling((user.LockoutEnd.Value - now).TotalMinutes);
+
+                throw new LockedException($"به‌دلیل تلاش‌های ناموفق زیاد، حساب شما موقتاً قفل شده است. {minutes} دقیقه‌ی دیگر دوباره تلاش کنید.");
+            }
+        }
+
+        private Task<int> RevokeAllSessionsAsync(int userId, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+
+            return _context.RefreshTokens
+                .Where(t => t.UserId == userId && t.RevokedAt == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.RevokedAt, now), cancellationToken);
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto, CancellationToken cancellationToken = default)
@@ -139,14 +161,7 @@ namespace Shop_API.Logics.Services.AuthServices
                 throw new UnauthorizedException(InvalidCredentialsMessage);
             }
 
-            var now = DateTimeOffset.UtcNow;
-
-            if (user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > now)
-            {
-                var minutes = (int)Math.Ceiling((user.LockoutEnd.Value - now).TotalMinutes);
-
-                throw new LockedException($"به‌دلیل تلاش‌های ناموفق زیاد، حساب شما موقتاً قفل شده است. {minutes} دقیقه‌ی دیگر دوباره تلاش کنید.");
-            }
+            EnsureNotLocked(user);
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
 
@@ -204,9 +219,7 @@ namespace Shop_API.Logics.Services.AuthServices
             {
                 if (stored.RevokedAt.Value < now.AddSeconds(-RefreshReuseGraceSeconds))
                 {
-                    await _context.RefreshTokens
-                        .Where(t => t.UserId == stored.UserId && t.RevokedAt == null)
-                        .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.RevokedAt, now), cancellationToken);
+                    await RevokeAllSessionsAsync(stored.UserId, cancellationToken);
                 }
 
                 throw new UnauthorizedException(InvalidSessionMessage);
@@ -257,6 +270,11 @@ namespace Shop_API.Logics.Services.AuthServices
                 .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.RevokedAt, now), cancellationToken);
         }
 
+        public async Task LogoutAllAsync(int userId, CancellationToken cancellationToken = default)
+        {
+            await RevokeAllSessionsAsync(userId, cancellationToken);
+        }
+
         public async Task<MeDto> GetMeAsync(int userId, CancellationToken cancellationToken = default)
         {
             var me = await _context.Users
@@ -290,6 +308,100 @@ namespace Shop_API.Logics.Services.AuthServices
             }
 
             return me.Dto;
+        }
+
+        public async Task<MeDto> EditMeAsync(int userId, EditMeDto dto, CancellationToken cancellationToken = default)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+                ?? throw new UnauthorizedException(InvalidSessionMessage);
+
+            if (!user.IsActive)
+            {
+                throw new ForbiddenException(InactiveMessage);
+            }
+
+            if (dto.FullName != null)
+            {
+                var fullName = dto.FullName.Trim();
+
+                if (fullName.Length < 2 || fullName.Length > 100)
+                {
+                    throw new ArgumentException("نام و نام خانوادگی باید بین ۲ تا ۱۰۰ کاراکتر باشد.");
+                }
+
+                if (fullName != user.FullName)
+                {
+                    user.FullName = fullName;
+
+                    user.UpdatedAt = DateTime.UtcNow;
+
+                    user.ConcurrencyStamp = Guid.NewGuid().ToString();
+
+                    try
+                    {
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        throw new ConflictException("اطلاعات شما هم‌زمان توسط عملیات دیگری تغییر کرده است. لطفاً دوباره تلاش کنید.");
+                    }
+                }
+            }
+
+            return await GetMeAsync(userId, cancellationToken);
+        }
+
+        public async Task<AuthResponseDto> ChangePasswordAsync(int userId, ChangePasswordDto dto, CancellationToken cancellationToken = default)
+        {
+            if (dto.CurrentPassword == dto.NewPassword)
+            {
+                throw new ArgumentException("رمز عبور جدید باید با رمز عبور فعلی متفاوت باشد.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId.ToString(CultureInfo.InvariantCulture))
+                ?? throw new UnauthorizedException(InvalidSessionMessage);
+
+            if (!user.IsActive)
+            {
+                throw new ForbiddenException(InactiveMessage);
+            }
+
+            EnsureNotLocked(user);
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                if (result.Errors.Any(e => e.Code == nameof(IdentityErrorDescriber.PasswordMismatch)))
+                {
+                    await _userManager.AccessFailedAsync(user);
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    throw new ArgumentException("رمز عبور فعلی اشتباه است.");
+                }
+
+                throw new ArgumentException(string.Join(" ", result.Errors.Select(e => e.Description)));
+            }
+
+            if (user.AccessFailedCount > 0)
+            {
+                await _userManager.ResetAccessFailedCountAsync(user);
+            }
+
+            await RevokeAllSessionsAsync(userId, cancellationToken);
+
+            var (entity, response) = BuildSession(userId);
+
+            _context.RefreshTokens.Add(entity);
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+
+            return response;
         }
     }
 }
