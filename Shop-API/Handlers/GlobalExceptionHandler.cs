@@ -26,6 +26,9 @@ namespace Shop_API.Handlers
             {
                 NotFoundException => (StatusCodes.Status404NotFound, "یافت نشد", exception.Message),
                 ConflictException => (StatusCodes.Status409Conflict, "تداخل در درخواست", exception.Message),
+                UnauthorizedException => (StatusCodes.Status401Unauthorized, "احراز هویت ناموفق", exception.Message),
+                ForbiddenException => (StatusCodes.Status403Forbidden, "دسترسی غیرمجاز", exception.Message),
+                LockedException => (StatusCodes.Status423Locked, "حساب قفل شده", exception.Message),
                 ArgumentException => (StatusCodes.Status400BadRequest, "درخواست نامعتبر", exception.Message),
                 BadHttpRequestException badRequest => (badRequest.StatusCode, "درخواست نامعتبر", "درخواست نامعتبر است یا حجم آن بیش از حد مجاز است."),
                 InvalidDataException => (StatusCodes.Status400BadRequest, "درخواست نامعتبر", "داده‌های ارسال‌شده معتبر نیستند."),

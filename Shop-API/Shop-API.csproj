@@ -5,9 +5,11 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<RootNamespace>Shop_API</RootNamespace>
-	</PropertyGroup>
+	  <UserSecretsId>c6689c96-3501-499b-a9a1-96fcdfb6345c</UserSecretsId>
+  </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.15" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.15" />
