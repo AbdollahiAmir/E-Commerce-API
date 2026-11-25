@@ -269,5 +269,37 @@ namespace Shop_API.Logics.Services.MediaServices
 
             await TryDeleteFileAsync(storageKey);
         }
+
+        public async Task DeleteIfUnusedAsync(IEnumerable<Guid> mediaIds)
+        {
+            foreach (var id in mediaIds.Distinct())
+            {
+                try
+                {
+                    var storageKey = await _context.Media
+                        .AsNoTracking()
+                        .Where(m => m.Id == id && !m.BrandLogos.Any() && !m.CategoryImages.Any() && !m.ProductVariantImages.Any())
+                        .Select(m => m.StorageKey)
+                        .FirstOrDefaultAsync(CancellationToken.None);
+
+                    if (storageKey == null)
+                    {
+                        continue;
+                    }
+
+                    var deleted = await _context.Media
+                        .Where(m => m.Id == id && !m.BrandLogos.Any() && !m.CategoryImages.Any() && !m.ProductVariantImages.Any())
+                        .ExecuteDeleteAsync(CancellationToken.None);
+
+                    if (deleted > 0)
+                    {
+                        await TryDeleteFileAsync(storageKey);
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
     }
 }

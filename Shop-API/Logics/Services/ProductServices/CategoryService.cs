@@ -5,6 +5,7 @@ using Shop_API.DTOs.CategoryDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.Helpers;
+using Shop_API.Logics.IServices.IMediaServices;
 using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
@@ -20,10 +21,12 @@ namespace Shop_API.Logics.Services.ProductServices
         private const string HasProductsMessage = "این دسته‌بندی دارای محصول است و قابل حذف نیست. در صورت نیاز می‌توانید آن را غیرفعال کنید.";
 
         private readonly AppDbContext _context;
+        private readonly IMediaService _mediaService;
 
-        public CategoryService(AppDbContext context)
+        public CategoryService(AppDbContext context, IMediaService mediaService)
         {
             _context = context;
+            _mediaService = mediaService;
         }
 
         private static string? NormalizeDescription(string? description)
@@ -292,6 +295,8 @@ namespace Shop_API.Logics.Services.ProductServices
                 throw new ArgumentException("نمی‌توان هم‌زمان والد جدید تعیین کرد و دسته‌بندی را به دسته‌ی اصلی تبدیل کرد.");
             }
 
+            var previousImageMediaId = category.ImageMediaId;
+
             var changed = false;
 
             if (dto.Name != null)
@@ -379,6 +384,11 @@ namespace Shop_API.Logics.Services.ProductServices
                 category.UpdatedAt = DateTime.UtcNow;
 
                 await SaveAsync(ReferenceDeletedMessage, cancellationToken);
+
+                if (previousImageMediaId.HasValue && previousImageMediaId != category.ImageMediaId)
+                {
+                    await _mediaService.DeleteIfUnusedAsync([previousImageMediaId.Value]);
+                }
             }
 
             return Map(category, await GetBreadcrumbAsync(category.Id, cancellationToken));
@@ -395,6 +405,8 @@ namespace Shop_API.Logics.Services.ProductServices
                 throw new ConflictException(HasProductsMessage);
             }
 
+            var imageMediaId = category.ImageMediaId;
+
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             var now = DateTime.UtcNow;
@@ -406,6 +418,11 @@ namespace Shop_API.Logics.Services.ProductServices
             await SaveAsync(DeleteConflictMessage, cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
+
+            if (imageMediaId.HasValue)
+            {
+                await _mediaService.DeleteIfUnusedAsync([imageMediaId.Value]);
+            }
         }
     }
 }

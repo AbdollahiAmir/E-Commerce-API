@@ -5,6 +5,7 @@ using Shop_API.DTOs.MediaDTOs;
 using Shop_API.DTOs.ProductDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.Helpers;
+using Shop_API.Logics.IServices.IMediaServices;
 using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
@@ -19,10 +20,12 @@ namespace Shop_API.Logics.Services.ProductServices
         private const string DeleteBlockedMessage = "این محصول به داده‌ی دیگری وابسته است و قابل حذف نیست.";
 
         private readonly AppDbContext _context;
+        private readonly IMediaService _mediaService;
 
-        public ProductService(AppDbContext context)
+        public ProductService(AppDbContext context, IMediaService mediaService)
         {
             _context = context;
+            _mediaService = mediaService;
         }
 
         private async Task<CategoryTree> LoadTreeAsync(CancellationToken cancellationToken)
@@ -328,9 +331,21 @@ namespace Shop_API.Logics.Services.ProductServices
         {
             var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id, cancellationToken) ?? throw new NotFoundException("محصول مورد نظر یافت نشد.");
 
+            var mediaIds = await _context.ProductVariantImages
+                .AsNoTracking()
+                .Where(i => i.ProductVariant.ProductId == id)
+                .Select(i => i.MediaId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
             _context.Products.Remove(product);
 
             await SaveAsync(DeleteBlockedMessage, cancellationToken);
+
+            if (mediaIds.Count > 0)
+            {
+                await _mediaService.DeleteIfUnusedAsync(mediaIds);
+            }
         }
     }
 }

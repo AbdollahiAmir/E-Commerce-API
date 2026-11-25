@@ -5,6 +5,7 @@ using Shop_API.DTOs.MediaDTOs;
 using Shop_API.DTOs.VariantDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.Helpers;
+using Shop_API.Logics.IServices.IMediaServices;
 using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
@@ -25,10 +26,12 @@ namespace Shop_API.Logics.Services.ProductServices
         private sealed record ResolvedAttribute(int AttributeId, string Value, string? ColorCode);
 
         private readonly AppDbContext _context;
+        private readonly IMediaService _mediaService;
 
-        public VariantService(AppDbContext context)
+        public VariantService(AppDbContext context, IMediaService mediaService)
         {
             _context = context;
+            _mediaService = mediaService;
         }
 
         private static string? NormalizeDescription(string? description)
@@ -470,9 +473,20 @@ namespace Shop_API.Logics.Services.ProductServices
         {
             var variant = await _context.ProductVariants.FirstOrDefaultAsync(v => v.Id == id, cancellationToken) ?? throw new NotFoundException("نوع محصول مورد نظر یافت نشد.");
 
+            var mediaIds = await _context.ProductVariantImages
+                .AsNoTracking()
+                .Where(i => i.ProductVariantId == id)
+                .Select(i => i.MediaId)
+                .ToListAsync(cancellationToken);
+
             _context.ProductVariants.Remove(variant);
 
             await SaveAsync(DeleteBlockedMessage, cancellationToken);
+
+            if (mediaIds.Count > 0)
+            {
+                await _mediaService.DeleteIfUnusedAsync(mediaIds);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shop_API.Data;
 using Shop_API.DTOs.VariantDTOs;
 using Shop_API.Exceptions;
+using Shop_API.Logics.IServices.IMediaServices;
 using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
@@ -14,10 +15,12 @@ namespace Shop_API.Logics.Services.ProductServices
         private const string MediaDeletedMessage = "تصویر انتخاب‌شده هم‌زمان حذف شد. لطفاً تصویر دیگری انتخاب کنید.";
 
         private readonly AppDbContext _context;
+        private readonly IMediaService _mediaService;
 
-        public VariantImageService(AppDbContext context)
+        public VariantImageService(AppDbContext context, IMediaService mediaService)
         {
             _context = context;
+            _mediaService = mediaService;
         }
 
         private static string? NormalizeAltText(string? altText)
@@ -255,6 +258,8 @@ namespace Shop_API.Logics.Services.ProductServices
 
             var wasMain = image.IsMain;
 
+            var mediaId = image.MediaId;
+
             _context.ProductVariantImages.Remove(image);
 
             await SaveAsync(cancellationToken);
@@ -277,6 +282,8 @@ namespace Shop_API.Logics.Services.ProductServices
             }
 
             await transaction.CommitAsync(cancellationToken);
+
+            await _mediaService.DeleteIfUnusedAsync([mediaId]);
         }
     }
 }

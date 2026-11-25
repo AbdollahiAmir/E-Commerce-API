@@ -5,6 +5,7 @@ using Shop_API.DTOs.BrandDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.Helpers;
+using Shop_API.Logics.IServices.IMediaServices;
 using Shop_API.Logics.IServices.IProductServices;
 using Shop_API.Models.ProductModels;
 
@@ -18,10 +19,12 @@ namespace Shop_API.Logics.Services.ProductServices
         private const string HasProductsMessage = "این برند دارای محصول است و قابل حذف نیست. در صورت نیاز می‌توانید آن را غیرفعال کنید.";
 
         private readonly AppDbContext _context;
+        private readonly IMediaService _mediaService;
 
-        public BrandService(AppDbContext context)
+        public BrandService(AppDbContext context, IMediaService mediaService)
         {
             _context = context;
+            _mediaService = mediaService;
         }
 
         private static string? NormalizeDescription(string? description)
@@ -182,6 +185,8 @@ namespace Shop_API.Logics.Services.ProductServices
                 throw new ArgumentException("نمی‌توان هم‌زمان لوگوی جدید تعیین کرد و لوگوی فعلی را حذف کرد.");
             }
 
+            var previousLogoMediaId = brand.LogoMediaId;
+
             var changed = false;
 
             if (dto.Name != null)
@@ -257,6 +262,11 @@ namespace Shop_API.Logics.Services.ProductServices
 
             await SaveAsync(MediaDeletedMessage, cancellationToken);
 
+            if (previousLogoMediaId.HasValue && previousLogoMediaId != brand.LogoMediaId)
+            {
+                await _mediaService.DeleteIfUnusedAsync([previousLogoMediaId.Value]);
+            }
+
             return ToDto(brand);
         }
 
@@ -271,9 +281,16 @@ namespace Shop_API.Logics.Services.ProductServices
                 throw new ConflictException(HasProductsMessage);
             }
 
+            var logoMediaId = brand.LogoMediaId;
+
             _context.Brands.Remove(brand);
 
             await SaveAsync(HasProductsMessage, cancellationToken);
+
+            if (logoMediaId.HasValue)
+            {
+                await _mediaService.DeleteIfUnusedAsync([logoMediaId.Value]);
+            }
         }
     }
 }

@@ -13,5 +13,7 @@ namespace Shop_API.Logics.IServices.IMediaServices
         Task<(Stream Stream, string ContentType)?> OpenAsync(Guid id, bool thumbnail = false, CancellationToken cancellationToken = default);
 
         Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+        Task DeleteIfUnusedAsync(IEnumerable<Guid> mediaIds);
     }
 }
