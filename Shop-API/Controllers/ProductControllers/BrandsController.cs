@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shop_API.Authorization;
+using Shop_API.Constants;
 using Shop_API.DTOs.BrandDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
@@ -18,6 +20,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Brands.Create)]
         public async Task<ActionResult<BrandDto>> Create([FromBody] CreateBrandDto request, CancellationToken cancellationToken)
         {
             var result = await _brandService.CreateAsync(request, cancellationToken);
@@ -26,6 +29,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Brands.View)]
         public async Task<ActionResult<PagedResult<BrandListDto>>> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
         {
             var result = await _brandService.GetPagedAsync(page, pageSize, search, cancellationToken);
@@ -34,6 +38,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet("{id:int}")]
+        [HasPermission(Permissions.Brands.View)]
         public async Task<ActionResult<BrandDto>> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _brandService.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("برند مورد نظر یافت نشد.");
@@ -42,6 +47,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPatch("{id:int}")]
+        [HasPermission(Permissions.Brands.Edit)]
         public async Task<ActionResult<BrandDto>> Update(int id, [FromBody] EditBrandDto request, CancellationToken cancellationToken)
         {
             var result = await _brandService.EditAsync(id, request, cancellationToken);
@@ -50,6 +56,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpDelete("{id:int}")]
+        [HasPermission(Permissions.Brands.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _brandService.DeleteAsync(id, cancellationToken);

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shop_API.Authorization;
+using Shop_API.Constants;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.DTOs.VariantDTOs;
 using Shop_API.Exceptions;
@@ -18,6 +20,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Variants.Create)]
         public async Task<ActionResult<VariantDto>> Create([FromBody] CreateVariantDto request, CancellationToken cancellationToken)
         {
             var result = await _variantService.CreateAsync(request, cancellationToken);
@@ -26,6 +29,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Variants.View)]
         public async Task<ActionResult<PagedResult<VariantListDto>>> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null, [FromQuery] int? productId = null, [FromQuery] bool? isActive = null, CancellationToken cancellationToken = default)
         {
             var result = await _variantService.GetPagedAsync(page, pageSize, search, productId, isActive, cancellationToken);
@@ -34,6 +38,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet("{id:int}")]
+        [HasPermission(Permissions.Variants.View)]
         public async Task<ActionResult<VariantDto>> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _variantService.GetByIdAsync(id, cancellationToken)
@@ -43,6 +48,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPatch("{id:int}")]
+        [HasPermission(Permissions.Variants.Edit)]
         public async Task<ActionResult<VariantDto>> Edit(int id, [FromBody] EditVariantDto request, CancellationToken cancellationToken)
         {
             var result = await _variantService.EditAsync(id, request, cancellationToken);
@@ -51,6 +57,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpDelete("{id:int}")]
+        [HasPermission(Permissions.Variants.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _variantService.DeleteAsync(id, cancellationToken);

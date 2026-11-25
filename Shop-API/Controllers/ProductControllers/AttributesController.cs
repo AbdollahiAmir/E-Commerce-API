@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shop_API.Authorization;
+using Shop_API.Constants;
 using Shop_API.DTOs.AttributeDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
@@ -18,6 +20,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Attributes.Create)]
         public async Task<ActionResult<AttributeDto>> Create([FromBody] CreateAttributeDto request, CancellationToken cancellationToken)
         {
             var result = await _attributeService.CreateAsync(request, cancellationToken);
@@ -26,6 +29,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Attributes.View)]
         public async Task<ActionResult<PagedResult<AttributeListDto>>> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
         {
             var result = await _attributeService.GetPagedAsync(page, pageSize, search, cancellationToken);
@@ -34,6 +38,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet("{id:int}")]
+        [HasPermission(Permissions.Attributes.View)]
         public async Task<ActionResult<AttributeDto>> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _attributeService.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("ویژگی مورد نظر یافت نشد.");
@@ -42,6 +47,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPatch("{id:int}")]
+        [HasPermission(Permissions.Attributes.Edit)]
         public async Task<ActionResult<AttributeDto>> Edit(int id, [FromBody] EditAttributeDto request, CancellationToken cancellationToken)
         {
             var result = await _attributeService.EditAsync(id, request, cancellationToken);
@@ -50,6 +56,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpDelete("{id:int}")]
+        [HasPermission(Permissions.Attributes.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _attributeService.DeleteAsync(id, cancellationToken);

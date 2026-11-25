@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Shop_API.Authorization;
+using Shop_API.Constants;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
 using Shop_API.Logics.IServices.IMediaServices;
@@ -17,6 +20,7 @@ namespace Shop_API.Controllers.MediaControllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Media.Upload)]
         [Consumes("multipart/form-data")]
         [RequestSizeLimit(10485760)]
         public async Task<ActionResult<MediaUploadDto>> Upload([FromForm] MediaUploadRequestDto request, CancellationToken cancellationToken)
@@ -27,6 +31,7 @@ namespace Shop_API.Controllers.MediaControllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Media.View)]
         public async Task<ActionResult<PagedResult<MediaListDto>>> GetPaged(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -39,6 +44,7 @@ namespace Shop_API.Controllers.MediaControllers
         }
 
         [HttpGet("{id:guid}")]
+        [HasPermission(Permissions.Media.View)]
         public async Task<ActionResult<MediaUploadDto>> GetById(Guid id, CancellationToken cancellationToken)
         {
             var result = await _mediaService.GetByIdAsync(id, cancellationToken)
@@ -48,6 +54,7 @@ namespace Shop_API.Controllers.MediaControllers
         }
 
         [HttpGet("{id:guid}/file")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetFile(Guid id, [FromQuery] bool thumbnail = false, CancellationToken cancellationToken = default)
         {
             var result = await _mediaService.OpenAsync(id, thumbnail, cancellationToken)
@@ -59,6 +66,7 @@ namespace Shop_API.Controllers.MediaControllers
         }
 
         [HttpDelete("{id:guid}")]
+        [HasPermission(Permissions.Media.Delete)]
         public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             await _mediaService.DeleteAsync(id, cancellationToken);

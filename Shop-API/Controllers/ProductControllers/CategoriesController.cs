@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shop_API.Authorization;
+using Shop_API.Constants;
 using Shop_API.DTOs.CategoryDTOs;
 using Shop_API.DTOs.MediaDTOs;
 using Shop_API.Exceptions;
@@ -18,6 +20,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Categories.Create)]
         public async Task<ActionResult<CategoryDto>> Create([FromBody] CreateCategoryDto request, CancellationToken cancellationToken)
         {
             var result = await _categoryService.CreateAsync(request, cancellationToken);
@@ -26,6 +29,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Categories.View)]
         public async Task<ActionResult<PagedResult<CategoryListDto>>> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null, CancellationToken cancellationToken = default)
         {
             var result = await _categoryService.GetPagedAsync(page, pageSize, search, cancellationToken);
@@ -34,6 +38,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet("tree")]
+        [HasPermission(Permissions.Categories.View)]
         public async Task<ActionResult<IReadOnlyList<CategoryTreeDto>>> GetTree(CancellationToken cancellationToken)
         {
             var result = await _categoryService.GetTreeAsync(cancellationToken);
@@ -42,6 +47,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet("{id:int}")]
+        [HasPermission(Permissions.Categories.View)]
         public async Task<ActionResult<CategoryDto>> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _categoryService.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("دسته‌بندی مورد نظر یافت نشد.");
@@ -50,6 +56,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPatch("{id:int}")]
+        [HasPermission(Permissions.Categories.Edit)]
         public async Task<ActionResult<CategoryDto>> Edit(int id, [FromBody] EditCategoryDto request, CancellationToken cancellationToken)
         {
             var result = await _categoryService.EditAsync(id, request, cancellationToken);
@@ -58,6 +65,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpDelete("{id:int}")]
+        [HasPermission(Permissions.Categories.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _categoryService.DeleteAsync(id, cancellationToken);

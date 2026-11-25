@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shop_API.Authorization;
+using Shop_API.Constants;
 using Shop_API.DTOs.VariantDTOs;
 using Shop_API.Logics.IServices.IProductServices;
 
@@ -16,6 +18,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPost]
+        [HasPermission(Permissions.Variants.Edit)]
         public async Task<ActionResult<VariantImageDto>> Add(int variantId, [FromBody] AddVariantImageDto request, CancellationToken cancellationToken)
         {
             var result = await _variantImageService.AddAsync(variantId, request, cancellationToken);
@@ -24,6 +27,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpGet]
+        [HasPermission(Permissions.Variants.View)]
         public async Task<ActionResult<IReadOnlyList<VariantImageDto>>> GetAll(int variantId, CancellationToken cancellationToken)
         {
             var result = await _variantImageService.GetAllAsync(variantId, cancellationToken);
@@ -32,6 +36,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpPatch("{imageId:int}")]
+        [HasPermission(Permissions.Variants.Edit)]
         public async Task<ActionResult<VariantImageDto>> Edit(int variantId, int imageId, [FromBody] EditVariantImageDto request, CancellationToken cancellationToken)
         {
             var result = await _variantImageService.EditAsync(variantId, imageId, request, cancellationToken);
@@ -40,6 +45,7 @@ namespace Shop_API.Controllers.ProductControllers
         }
 
         [HttpDelete("{imageId:int}")]
+        [HasPermission(Permissions.Variants.Edit)]
         public async Task<IActionResult> Delete(int variantId, int imageId, CancellationToken cancellationToken)
         {
             await _variantImageService.DeleteAsync(variantId, imageId, cancellationToken);
